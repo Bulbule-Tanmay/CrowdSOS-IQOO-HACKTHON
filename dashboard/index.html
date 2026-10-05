@@ -1,0 +1,32 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CrowdSOS Dashboard</title>
+<style>
+*{box-sizing:border-box;margin:0}body{font-family:Arial,sans-serif;background:#F5F3F4;color:#020202;padding:24px}
+header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+.logo{font-weight:900;font-size:26px}.logo b{color:#F0B82F}
+.live{background:#020202;color:#F0B82F;border-radius:99px;padding:6px 14px;font-size:13px;font-weight:700}
+h1{font-size:28px;margin-bottom:16px}
+.empty{color:#646465;padding:40px;text-align:center;background:#fff;border:1px dashed #DAD8D7;border-radius:14px}
+.card{background:#fff;border:1px solid #DAD8D7;border-radius:14px;padding:18px 20px;margin-bottom:14px;animation:in .4s}
+.card.new{background:#020202;color:#F5F3F4}
+@keyframes in{from{opacity:0;transform:translateY(-10px)}to{opacity:1}}
+.t{font-size:22px;font-weight:900;margin-bottom:8px}.card.new .t{color:#F0B82F}
+.row{display:flex;flex-wrap:wrap;gap:8px 24px;font-size:15px;margin:4px 0}
+.pill{display:inline-block;background:#F0B82F;color:#020202;border-radius:99px;padding:4px 12px;font-weight:700;font-size:13px;margin-top:8px;margin-right:6px}
+a{color:inherit;font-weight:700}
+</style></head><body>
+<header><div class="logo">i<b>Q</b>OO · CrowdSOS</div><div class="live">● LIVE EMERGENCY DASHBOARD</div></header>
+<h1>Incoming alerts</h1><div id="list"><div class="empty">Waiting for an SOS…</div></div>
+<script>
+const N={medical:'🚑 MEDICAL ASSISTANCE REQUIRED',police:'🚔 POLICE ASSISTANCE REQUIRED',fire:'🔥 FIRE ASSISTANCE REQUIRED',accident:'🚗 ACCIDENT ASSISTANCE REQUIRED',other:'🆘 EMERGENCY ASSISTANCE REQUIRED'};
+const list=document.getElementById('list');
+new EventSource('/events').onmessage=e=>{
+  const a=JSON.parse(e.data); if(list.querySelector('.empty'))list.innerHTML='';
+  list.querySelectorAll('.new').forEach(c=>c.classList.remove('new'));
+  const d=document.createElement('div');d.className='card new';
+  d.innerHTML=`<div class="t">${N[a.type]||N.other}</div>
+  <div class="row"><span>📍 <a target="_blank" href="https://maps.google.com/?q=${a.lat},${a.lon}">${(+a.lat).toFixed(5)}, ${(+a.lon).toFixed(5)}</a></span><span>🕐 ${new Date(a.ts).toLocaleTimeString()}</span><span>🆔 ${a.id}</span></div>
+  <span class="pill">📡 Received through Crowd Relay · ${a.hops} hop${a.hops==1?'':'s'}</span><span class="pill">Priority: ${String(a.priority).toUpperCase()}</span>`;
+  list.prepend(d);
+};
+</script></body></html>
